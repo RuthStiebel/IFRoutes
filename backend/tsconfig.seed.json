@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Override rootDir when running the seeder to allow ts-node to find root files
+    "rootDir": "./"
+  },
+  "include": ["src/**/*.ts", "seed.ts"]
+}

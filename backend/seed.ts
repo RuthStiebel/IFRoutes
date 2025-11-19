@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-import Chart, { IChart } from "./models/Chart"; // Import Mongoose model
+import Chart, { IChart } from "./src/models/Chart"; // Import Mongoose model
 
 // Load environment variables from .env file
 dotenv.config({ path: "./.env" });
