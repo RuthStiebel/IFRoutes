@@ -1,0 +1,51 @@
+{
+  "id": "LLBG-SUVAS1",
+  "type": "SID",
+  "name": "SUVAS1 SID",
+  "chart_date": "15 MAY 25",
+  "map_url": "https://github.com/RuthStiebel/IFRoutes/blob/main/backend/data/SID%20SUVAS1E%20DAFNA1E.png",
+  "fixes": [
+    {
+      "fix_name": "MATOV",
+      "max_alt": "-1",
+      "min_alt": "2400",
+      "x": 450,
+      "y": 150
+    },
+    {
+      "fix_name": "ORLEV",
+      "max_alt": "8000",
+      "min_alt": "-1",
+      "x": 480,
+      "y": 300
+    },
+    {
+      "fix_name": "TAPUZ",
+      "max_alt": "8000",
+      "min_alt": "5000",
+      "x": 520,
+      "y": 500
+    },
+    {
+      "fix_name": "KESEF",
+      "max_alt": "-1",
+      "min_alt": "5000",
+      "x": 550,
+      "y": 650
+    },
+    {
+      "fix_name": "PURLA",
+      "max_alt": "-1",
+      "min_alt": "5000",
+      "x": 580,
+      "y": 800
+    },
+    {
+      "fix_name": "SUVAS",
+      "max_alt": "-1",
+      "min_alt": "5000",
+      "x": 610,
+      "y": 950
+    }
+  ]
+}

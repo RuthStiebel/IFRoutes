@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "ts-node src/server.ts",
-    "seed": "TS_NODE_PROJECT='./tsconfig.json' ts-node seed.ts"
+    "seed": "ts-node seed.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
