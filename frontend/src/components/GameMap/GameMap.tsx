@@ -35,6 +35,8 @@ export const GameMap: React.FC<GameMapProps> = ({
   handlePointerUp,
   isPanning,
 }) => {
+  const fixNameKey = "fix_name"; // Use fix_name as per model definition
+
   return (
     <div className="w-full max-w-lg mx-auto">
       <div
@@ -62,7 +64,7 @@ export const GameMap: React.FC<GameMapProps> = ({
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          {/* Background Map Image */}
+          {/* Background Map Image: SOURCE IS chart.map_url */}
           <img
             src={chart.map_url}
             alt={chart.name}
@@ -71,10 +73,11 @@ export const GameMap: React.FC<GameMapProps> = ({
               const target = e.target as HTMLImageElement;
               target.onerror = null;
               target.src =
-                "https://placehold.co/800x1200/404040/ffffff?text=Map+Not+Found+-+Check+API+Path";
+                "https://placehold.co/800x1200/404040/ffffff?text=Map+Not+Found+-+Check+MongoDB+URL"; // Updated placeholder message
               console.error(
-                "Map image failed to load. Check API path or URL in MongoDB."
+                "Map image failed to load. Check chart.map_url field in MongoDB for direct image link."
               );
+              console.log("chart.map_url:", chart.map_url);
             }}
           />
 
@@ -83,7 +86,7 @@ export const GameMap: React.FC<GameMapProps> = ({
             {chart.fixes.map((fix) => {
               const isGuessingFix = gameMode.guessFixes;
               const isGuessingAlt = gameMode.guessAlts;
-              const fixName = fix.fix_name;
+              const fixName = fix[fixNameKey];
               const guessKeyFix = `${fixName}-fix`;
               const guessKeyAlt = `${fixName}-alt`;
 

@@ -170,8 +170,6 @@ const App: React.FC = () => {
     resetZoomPan();
   };
 
-  // --- Zoom/Pan Logic (Defined in main App and passed to GameMap) ---
-
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (zoom > 1.0) {
       setIsPanning(true);
