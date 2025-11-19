@@ -11,7 +11,7 @@ export interface IFix extends Document {
 
 // Interface for the main Chart document
 export interface IChart extends Document {
-  airport_id: string; // e.g., 'LLBG'
+  airport_id: string;
   name: string;
   type: "SID" | "STAR";
   map_url: string;
