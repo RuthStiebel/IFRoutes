@@ -24,24 +24,6 @@ const App: React.FC = () => {
   >({});
   const [error, setError] = useState<string | null>(null);
 
-  // --- Zoom/Pan State (useZoomPan hook equivalent) ---
-  const [zoom, setZoom] = useState<number>(1.0);
-  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [isPanning, setIsPanning] = useState<boolean>(false);
-  const [startPan, setStartPan] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
-  });
-
-  // --- Utility Functions ---
-
-  const resetZoomPan = useCallback(() => {
-    setZoom(1.0);
-    setPan({ x: 0, y: 0 });
-    setIsPanning(false);
-    setStartPan({ x: 0, y: 0 });
-  }, []);
-
   // --- API and Data Fetching Logic ---
   const fetchAllCharts = useCallback(async () => {
     try {
@@ -80,7 +62,6 @@ const App: React.FC = () => {
     setUserGuesses({});
     setFeedback({});
     setScore(null);
-    resetZoomPan();
     setStep(2);
   };
 
@@ -167,56 +148,7 @@ const App: React.FC = () => {
     setScore(null);
     setFeedback({});
     setGameMode({ guessFixes: false, guessAlts: false });
-    resetZoomPan();
   };
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (zoom > 1.0) {
-      setIsPanning(true);
-      setStartPan({
-        x: e.clientX - pan.x,
-        y: e.clientY - pan.y,
-      });
-      (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    }
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isPanning || zoom === 1.0) return;
-
-    const newPanX = e.clientX - startPan.x;
-    const newPanY = e.clientY - startPan.y;
-
-    const maxPanX = (800 * zoom - 800) / 2;
-    const maxPanY = (1200 * zoom - 1200) / 2;
-
-    const clampedPanX = Math.max(-maxPanX, Math.min(maxPanX, newPanX));
-    const clampedPanY = Math.max(-maxPanY, Math.min(maxPanY, newPanY));
-
-    setPan({ x: clampedPanX, y: clampedPanY });
-  };
-
-  const handlePointerUp = () => {
-    setIsPanning(false);
-  };
-
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const scaleFactor = 0.1;
-    let newZoom = zoom;
-
-    if (e.deltaY < 0) {
-      newZoom = Math.min(3.0, zoom + scaleFactor);
-    } else {
-      newZoom = Math.max(1.0, zoom - scaleFactor);
-    }
-    setZoom(newZoom);
-
-    if (newZoom === 1.0) {
-      setPan({ x: 0, y: 0 });
-    }
-  };
-
   // --- Main Render ---
 
   // Show Loading or Error Message
@@ -278,13 +210,6 @@ const App: React.FC = () => {
                   handleGuessChange={handleGuessChange}
                   feedback={feedback}
                   step={step}
-                  zoom={zoom}
-                  pan={pan}
-                  handleWheel={handleWheel}
-                  handlePointerDown={handlePointerDown}
-                  handlePointerMove={handlePointerMove}
-                  handlePointerUp={handlePointerUp}
-                  isPanning={isPanning}
                 />
               </div>
               <GameInfoAndControls
