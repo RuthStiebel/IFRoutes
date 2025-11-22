@@ -3,7 +3,10 @@
   "type": "SID",
   "name": "SUVAS1 SID",
   "chart_date": "15 MAY 25",
-  "map_url": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/SID%20SUVAS1%20DAFNA1%20MERVA2.png?raw=true",
+  "map_url": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/SID/original/LLBG-SUVAS1E_DAFNA1E_MERVA1E.png?raw=true",
+  "map_url_no_alt": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/SID/sans_altitudes/LLBG-SUVAS1E_DAFNA1E_MERVA1E_altitudes.png?raw=true",
+  "map_url_no_fix": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/SID/sans_fixes/LLBG-SUVAS1E_DAFNA1E_MERVA1E_fixes.png?raw=true",
+  "map_url_clean": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/SID/nada/LLBG-SUVAS1E_DAFNA1E_MERVA1E_nada.png?raw=true",
   "fixes": [
     {
       "fix_name": "MATOV",
