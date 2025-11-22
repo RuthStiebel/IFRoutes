@@ -14,6 +14,7 @@ import WaypointsPanel from "@/components/waypoints-panel";
 import PerformanceScore from "@/components/performance-score";
 import MapSelector from "@/components/map-selector";
 import { submitRoute, type ChartData } from "../lib/api";
+import { PracticeMode } from "../lib/globals";
 
 interface Waypoint {
   id: string;
@@ -23,8 +24,6 @@ interface Waypoint {
   x: number;
   y: number;
 }
-
-type PracticeMode = "FULL" | "NO_ALT" | "NO_FIX" | "CLEAN";
 
 export default function Home() {
   const [procedureType, setProcedureType] = useState<"SID" | "STAR" | null>(
@@ -49,11 +48,11 @@ export default function Home() {
   const handleMapSelect = (chart: ChartData) => {
     let urlToUse = chart.map_url; // Default to standard
 
-    if (practiceMode === "NO_ALT" && chart.map_url_no_alt) {
+    if (practiceMode === "NO_ALT") {
       urlToUse = chart.map_url_no_alt;
-    } else if (practiceMode === "NO_FIX" && chart.map_url_no_fix) {
+    } else if (practiceMode === "NO_FIX") {
       urlToUse = chart.map_url_no_fix;
-    } else if (practiceMode === "CLEAN" && chart.map_url_clean) {
+    } else if (practiceMode === "CLEAN") {
       urlToUse = chart.map_url_clean;
     }
 
@@ -296,6 +295,7 @@ export default function Home() {
                   onUpdateWaypoint={handleUpdateWaypoint}
                   onDeleteWaypoint={handleDeleteWaypoint}
                   selectedWaypointId={selectedWaypointId}
+                  practiceMode={practiceMode}
                 />
 
                 <PerformanceScore
