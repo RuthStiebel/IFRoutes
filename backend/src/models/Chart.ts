@@ -1,44 +1,46 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-// Interface for the Fix data (nested within the Chart document)
+// Interface for Fixes
 export interface IFix extends Document {
   fix_name: string;
   min_alt: string;
   max_alt: string;
-  //  x: number;
-  //  y: number;
 }
 
-// Interface for the main Chart document
+// Updated Interface with new map variants
 export interface IChart extends Document {
   airport_id: string;
   name: string;
   type: "SID" | "STAR";
-  map_url: string;
+  map_url: string; // Standard (Full)
+  map_url_no_alt?: string; // No Altitudes
+  map_url_no_fix?: string; // No Fix Names
+  map_url_clean?: string; // No Fixes or Altitudes (Line only)
   fixes: IFix[];
 }
 
-// Define the Schema for the Fixes (sub-document schema)
 const FixSchema: Schema = new Schema(
   {
     fix_name: { type: String, required: true },
     min_alt: { type: String, required: true },
     max_alt: { type: String, required: true },
-    //   x: { type: Number, required: true },
-    //  y: { type: Number, required: true },
   },
   { _id: false }
-); // MongoDB will not generate IDs for sub-documents
+);
 
-// Define the main Chart Schema
 const ChartSchema: Schema = new Schema({
-  _id: { type: String, required: true }, // Using _id to store the chart ID (e.g., 'LLBG-SUVAS1')
+  _id: { type: String, required: true },
   airport_id: { type: String, required: true, index: true },
   name: { type: String, required: true },
   type: { type: String, enum: ["SID", "STAR"], required: true },
+
+  // Image Variants
   map_url: { type: String, required: true },
+  map_url_no_alt: { type: String, required: false },
+  map_url_no_fix: { type: String, required: false },
+  map_url_clean: { type: String, required: false },
+
   fixes: [FixSchema],
 });
 
-// Export the Mongoose Model
-export default mongoose.model<IChart>("Chart", ChartSchema, "charts"); // The collection name in Mongo will be 'charts'
+export default mongoose.model<IChart>("Chart", ChartSchema, "charts");

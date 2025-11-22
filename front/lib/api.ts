@@ -6,6 +6,9 @@ export interface ChartData {
   name: string;
   type: string;
   map_url: string;
+  map_url_no_alt: string; // No Altitudes
+  map_url_no_fix: string; // No Fix Names
+  map_url_clean: string; // No Fixes or Altitudes (Line only)
   fixes?: any[];
 }
 

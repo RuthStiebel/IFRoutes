@@ -1,12 +1,19 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { PlaneTakeoff, PlaneLanding } from "lucide-react";
+import {
+  PlaneTakeoff,
+  PlaneLanding,
+  Eye,
+  EyeOff,
+  Hash,
+  LayoutTemplate,
+} from "lucide-react";
 import ChartCanvas from "@/components/chart-canvas";
 import WaypointsPanel from "@/components/waypoints-panel";
 import PerformanceScore from "@/components/performance-score";
 import MapSelector from "@/components/map-selector";
-import { submitRoute } from "@/lib/api";
+import { submitRoute, type ChartData } from "../lib/api";
 
 interface Waypoint {
   id: string;
@@ -17,11 +24,15 @@ interface Waypoint {
   y: number;
 }
 
+type PracticeMode = "FULL" | "NO_ALT" | "NO_FIX" | "CLEAN";
+
 export default function Home() {
   const [procedureType, setProcedureType] = useState<"SID" | "STAR" | null>(
     null
   );
-  const [selectedMap, setSelectedMap] = useState<string | null>(null);
+  const [practiceMode, setPracticeMode] = useState<PracticeMode | null>(null);
+
+  const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [mapImage, setMapImage] = useState<string | null>(null);
 
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
@@ -34,9 +45,22 @@ export default function Home() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const handleMapSelect = (mapId: string, imageUrl: string) => {
-    setSelectedMap(mapId);
-    setMapImage(imageUrl);
+  // Logic to pick the correct map based on mode
+  const handleMapSelect = (chart: ChartData) => {
+    let urlToUse = chart.map_url; // Default to standard
+
+    if (practiceMode === "NO_ALT" && chart.map_url_no_alt) {
+      urlToUse = chart.map_url_no_alt;
+    } else if (practiceMode === "NO_FIX" && chart.map_url_no_fix) {
+      urlToUse = chart.map_url_no_fix;
+    } else if (practiceMode === "CLEAN" && chart.map_url_clean) {
+      urlToUse = chart.map_url_clean;
+    }
+
+    setSelectedMapId(chart._id);
+    setMapImage(urlToUse);
+
+    // Reset workspace
     setWaypoints([]);
     setRouteSubmitted(false);
     setScoreResult(null);
@@ -60,23 +84,6 @@ export default function Home() {
   };
 
   const handleClearDrawing = () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (mapImage) {
-          const img = new Image();
-          img.onload = () => {
-            const aspectRatio = img.naturalHeight / img.naturalWidth;
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.width * aspectRatio;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          };
-          img.src = mapImage;
-        }
-      }
-    }
     setWaypoints([]);
     setRouteSubmitted(false);
     setScoreResult(null);
@@ -84,9 +91,9 @@ export default function Home() {
   };
 
   const handleSubmitRoute = async () => {
-    if (!selectedMap) return;
+    if (!selectedMapId) return;
     try {
-      const result = await submitRoute(selectedMap, waypoints);
+      const result = await submitRoute(selectedMapId, waypoints);
       setScoreResult(result);
       setRouteSubmitted(true);
       setSelectedWaypointId(null);
@@ -96,53 +103,26 @@ export default function Home() {
     }
   };
 
-  // --- Render Logic ---
-
-  // 1. Chart Selection Step (SID vs STAR)
+  // --- STEP 1: PROCEDURE TYPE ---
   if (!procedureType) {
     return (
       <main className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
         <div className="max-w-4xl w-full text-center space-y-8">
-          <div>
-            <h1 className="text-4xl font-bold mb-4">IFR Procedure Sketchpad</h1>
-            <p className="text-muted-foreground text-xl">
-              What type of procedure do you want to practice?
-            </p>
-          </div>
-
+          <h1 className="text-4xl font-bold mb-4">IFR Procedure Sketchpad</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            {/* SID Button */}
             <button
               onClick={() => setProcedureType("SID")}
-              className="group flex flex-col items-center p-8 rounded-xl border-2 border-border bg-card hover:border-blue-500 hover:bg-blue-500/5 transition-all duration-300"
+              className="group flex flex-col items-center p-8 rounded-xl border-2 border-border bg-card hover:border-blue-500 transition-all"
             >
-              <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <PlaneTakeoff className="w-10 h-10 text-blue-500" />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Departures</h2>
-              <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-sm font-semibold">
-                SID
-              </span>
-              <p className="mt-4 text-muted-foreground text-sm">
-                Practice Standard Instrument Departures
-              </p>
+              <PlaneTakeoff className="w-10 h-10 text-blue-500 mb-4" />
+              <h2 className="text-2xl font-bold">Departures (SID)</h2>
             </button>
-
-            {/* STAR Button */}
             <button
               onClick={() => setProcedureType("STAR")}
-              className="group flex flex-col items-center p-8 rounded-xl border-2 border-border bg-card hover:border-green-500 hover:bg-green-500/5 transition-all duration-300"
+              className="group flex flex-col items-center p-8 rounded-xl border-2 border-border bg-card hover:border-green-500 transition-all"
             >
-              <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <PlaneLanding className="w-10 h-10 text-green-500" />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Arrivals</h2>
-              <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-sm font-semibold">
-                STAR
-              </span>
-              <p className="mt-4 text-muted-foreground text-sm">
-                Practice Standard Terminal Arrival Routes
-              </p>
+              <PlaneLanding className="w-10 h-10 text-green-500 mb-4" />
+              <h2 className="text-2xl font-bold">Arrivals (STAR)</h2>
             </button>
           </div>
         </div>
@@ -150,33 +130,118 @@ export default function Home() {
     );
   }
 
+  // --- STEP 2: PRACTICE MODE ---
+  if (!practiceMode) {
+    return (
+      <main className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
+        <div className="max-w-4xl w-full text-center space-y-8">
+          <h1 className="text-3xl font-bold">Select Difficulty</h1>
+          <p className="text-muted-foreground">
+            How much information do you want on the chart?
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+            {/* Standard */}
+            <button
+              onClick={() => setPracticeMode("FULL")}
+              className="flex items-center gap-4 p-6 rounded-xl border border-border bg-card hover:border-primary transition-all text-left"
+            >
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Eye className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold">Standard Chart</h3>
+                <p className="text-xs text-muted-foreground">
+                  Full chart with fixes and altitudes shown.
+                </p>
+              </div>
+            </button>
+
+            {/* No Altitudes */}
+            <button
+              onClick={() => setPracticeMode("NO_ALT")}
+              className="flex items-center gap-4 p-6 rounded-xl border border-border bg-card hover:border-orange-500 transition-all text-left"
+            >
+              <div className="p-3 bg-orange-500/10 rounded-full">
+                <Hash className="w-6 h-6 text-orange-500" />
+              </div>
+              <div>
+                <h3 className="font-bold text-orange-500">No Altitudes</h3>
+                <p className="text-xs text-muted-foreground">
+                  Chart shows fixes, but altitudes are hidden.
+                </p>
+              </div>
+            </button>
+
+            {/* No Fixes */}
+            <button
+              onClick={() => setPracticeMode("NO_FIX")}
+              className="flex items-center gap-4 p-6 rounded-xl border border-border bg-card hover:border-purple-500 transition-all text-left"
+            >
+              <div className="p-3 bg-purple-500/10 rounded-full">
+                <LayoutTemplate className="w-6 h-6 text-purple-500" />
+              </div>
+              <div>
+                <h3 className="font-bold text-purple-500">No Fix Names</h3>
+                <p className="text-xs text-muted-foreground">
+                  Altitude restrictions are visible, but fix names are hidden.
+                </p>
+              </div>
+            </button>
+
+            {/* Clean */}
+            <button
+              onClick={() => setPracticeMode("CLEAN")}
+              className="flex items-center gap-4 p-6 rounded-xl border border-border bg-card hover:border-red-500 transition-all text-left"
+            >
+              <div className="p-3 bg-red-500/10 rounded-full">
+                <EyeOff className="w-6 h-6 text-red-500" />
+              </div>
+              <div>
+                <h3 className="font-bold text-red-500">Clean Chart</h3>
+                <p className="text-xs text-muted-foreground">
+                  Only the route line is shown. No text.
+                </p>
+              </div>
+            </button>
+          </div>
+
+          <button
+            onClick={() => setProcedureType(null)}
+            className="text-sm text-muted-foreground hover:underline"
+          >
+            Back to Procedure Type
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // --- STEP 3: WORKSPACE ---
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold mb-2 text-balance">
             IFR Procedure Sketchpad
           </h1>
           <p className="text-muted-foreground text-lg">
-            Practicing {procedureType === "SID" ? "Departures" : "Arrivals"}
+            {procedureType === "SID" ? "Departure" : "Arrival"} •{" "}
+            {practiceMode === "FULL" ? "Standard" : "Practice Mode"}
           </p>
         </div>
 
-        {/* 2. Specific Map Selection */}
-        {!selectedMap ? (
+        {!selectedMapId ? (
           <MapSelector
             chartType={procedureType}
             onSelectMap={handleMapSelect}
-            onBack={() => setProcedureType(null)}
+            onBack={() => setPracticeMode(null)}
           />
         ) : (
-          // 3. The Workspace
           <>
-            {/* Controls */}
             <div className="flex gap-4 mb-6 flex-wrap">
               <button
-                onClick={() => setSelectedMap(null)}
+                onClick={() => setSelectedMapId(null)}
                 className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
               >
                 Choose Different Map
@@ -196,9 +261,7 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Canvas Area */}
               <div className="lg:col-span-3">
                 <div className="bg-card rounded-lg border border-border overflow-hidden">
                   <ChartCanvas
@@ -214,29 +277,20 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Right Sidebar */}
               <div className="lg:col-span-1 space-y-4">
-                {/* Instructions */}
                 <div className="bg-card border border-border rounded-lg p-4">
-                  <h3 className="font-semibold mb-3 text-sm">
-                    How to Practice:
-                  </h3>
+                  <h3 className="font-semibold mb-3 text-sm">Instructions:</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>
-                      • <strong>Draw:</strong> Click chart to add points.
+                      • <strong>Click</strong> to add points.
                     </li>
                     <li>
-                      • <strong>Edit:</strong> Double-click a point on chart or
-                      list.
+                      • <strong>Double-click</strong> to edit.
                     </li>
-                    <li>
-                      • <strong>Log:</strong> Enter Altitudes (e.g., 5000 or
-                      FL080).
-                    </li>
+                    <li>• Enter constraints in the log.</li>
                   </ul>
                 </div>
 
-                {/* Waypoints Panel */}
                 <WaypointsPanel
                   waypoints={waypoints}
                   onUpdateWaypoint={handleUpdateWaypoint}
@@ -247,7 +301,7 @@ export default function Home() {
                 <PerformanceScore
                   routeSubmitted={routeSubmitted}
                   waypointCount={waypoints.length}
-                  scoreData={scoreResult} // <--- UPDATED: Passing real data
+                  scoreData={scoreResult}
                 />
               </div>
             </div>
