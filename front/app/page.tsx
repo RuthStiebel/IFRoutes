@@ -141,7 +141,7 @@ export default function Home() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-            {/* Standard */}
+            {/*  { Standard }
             <button
               onClick={() => setPracticeMode("FULL")}
               className="flex items-center gap-4 p-6 rounded-xl border border-border bg-card hover:border-primary transition-all text-left"
@@ -156,7 +156,7 @@ export default function Home() {
                 </p>
               </div>
             </button>
-
+*/}
             {/* No Altitudes */}
             <button
               onClick={() => setPracticeMode("NO_ALT")}
