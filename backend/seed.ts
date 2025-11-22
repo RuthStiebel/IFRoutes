@@ -18,8 +18,9 @@ if (!MONGO_URI) {
 // IMPORTANT: Place all your SID/STAR JSON files in a directory named 'data/'
 const chartFiles = [
   "LLBG-SUVAS1.json",
+  "LLBG-DAFNA1.json",
+  "LLBG-MERVA2.json",
   "LLBG-VETEK1A.json",
-  // Add all your other chart JSON file names here
 ];
 
 const seedDB = async () => {

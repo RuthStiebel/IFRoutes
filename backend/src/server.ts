@@ -15,7 +15,7 @@ const MONGO_URI =
 // --- Middleware ---
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow frontend origin (standard React/Vite dev port)
+    origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -33,6 +33,7 @@ mongoose
 
 // --- API Routes ---
 app.use("/api", chartRoutes);
+app.use("/data", express.static("data"));
 
 // --- Simple Root Route ---
 app.get("/", (req: Request, res: Response) => {

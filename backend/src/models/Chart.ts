@@ -5,8 +5,8 @@ export interface IFix extends Document {
   fix_name: string;
   min_alt: string;
   max_alt: string;
-  x: number;
-  y: number;
+  //  x: number;
+  //  y: number;
 }
 
 // Interface for the main Chart document
@@ -24,8 +24,8 @@ const FixSchema: Schema = new Schema(
     fix_name: { type: String, required: true },
     min_alt: { type: String, required: true },
     max_alt: { type: String, required: true },
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
+    //   x: { type: Number, required: true },
+    //  y: { type: Number, required: true },
   },
   { _id: false }
 ); // MongoDB will not generate IDs for sub-documents
