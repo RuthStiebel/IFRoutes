@@ -13,9 +13,9 @@ export interface IChart extends Document {
   name: string;
   type: "SID" | "STAR";
   map_url: string; // Standard (Full)
-  map_url_no_alt?: string; // No Altitudes
-  map_url_no_fix?: string; // No Fix Names
-  map_url_clean?: string; // No Fixes or Altitudes (Line only)
+  map_url_no_alt: string; // No Altitudes
+  map_url_no_fix: string; // No Fix Names
+  map_url_clean: string; // No Fixes or Altitudes (Line only)
   fixes: IFix[];
 }
 
@@ -36,9 +36,9 @@ const ChartSchema: Schema = new Schema({
 
   // Image Variants
   map_url: { type: String, required: true },
-  map_url_no_alt: { type: String, required: false },
-  map_url_no_fix: { type: String, required: false },
-  map_url_clean: { type: String, required: false },
+  map_url_no_alt: { type: String, required: true },
+  map_url_no_fix: { type: String, required: true },
+  map_url_clean: { type: String, required: true },
 
   fixes: [FixSchema],
 });

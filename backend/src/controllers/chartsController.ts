@@ -27,6 +27,9 @@ export const getChartsByAirport = async (
       name: chart.name,
       type: chart.type,
       map_url: chart.map_url,
+      map_url_no_alt: chart.map_url_no_alt,
+      map_url_no_fix: chart.map_url_no_fix,
+      map_url_clean: chart.map_url_clean,
       fixes: chart.fixes,
     }));
 

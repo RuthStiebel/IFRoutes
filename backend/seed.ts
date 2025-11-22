@@ -54,6 +54,9 @@ const seedDB = async () => {
         name: chartData.name,
         type: chartData.type,
         map_url: chartData.map_url,
+        map_url_no_alt: chartData.map_url_no_alt,
+        map_url_no_fix: chartData.map_url_no_fix,
+        map_url_clean: chartData.map_url_clean,
         fixes: chartData.fixes,
       } as IChart;
 
