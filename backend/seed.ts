@@ -14,8 +14,7 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
-// --- List of your local JSON files to import ---
-// IMPORTANT: Place all your SID/STAR JSON files in a directory named 'data/'
+// --- List of local JSON files to import ---
 const chartFiles = [
   "LLBG-SUVAS1.json",
   "LLBG-DAFNA1.json",
