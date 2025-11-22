@@ -63,6 +63,14 @@ export default function WaypointsPanel({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSave();
+    } else if (e.key === "Escape") {
+      handleCancel();
+    }
+  };
+
   return (
     <div className="bg-card border border-border rounded-lg p-4 flex flex-col h-[400px]">
       <h3 className="font-semibold mb-3 flex items-center gap-2 text-sm">
@@ -110,6 +118,7 @@ export default function WaypointsPanel({
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
+                          onKeyDown={handleKeyDown}
                           className="w-full px-2 py-1 bg-background border border-input rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                           placeholder="Fix Name"
                           autoFocus
@@ -127,6 +136,7 @@ export default function WaypointsPanel({
                               type="text"
                               value={editMinAlt}
                               onChange={(e) => setEditMinAlt(e.target.value)}
+                              onKeyDown={handleKeyDown}
                               className="w-full px-2 py-1 bg-background border border-input rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                               placeholder="None"
                             />
