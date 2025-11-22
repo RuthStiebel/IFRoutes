@@ -1,7 +1,7 @@
 {
-  "id": "LLBG-SUVAS1",
+  "id": "LLBG-MERVA2",
   "type": "SID",
-  "name": "SUVAS1 SID",
+  "name": "MERVA2 SID",
   "chart_date": "15 MAY 25",
   "map_url": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/SID%20SUVAS1%20DAFNA1%20MERVA2.png?raw=true",
   "fixes": [
@@ -23,17 +23,22 @@
     {
       "fix_name": "KESEF",
       "max_alt": "-1",
-      "min_alt": "5000"
+      "min_alt": "8000"
     },
     {
-      "fix_name": "PURLA",
+      "fix_name": "YUVAL",
       "max_alt": "-1",
-      "min_alt": "5000"
+      "min_alt": "10000"
     },
     {
-      "fix_name": "SUVAS",
+      "fix_name": "JILET",
       "max_alt": "-1",
-      "min_alt": "5000"
+      "min_alt": "12000"
+    },
+    {
+      "fix_name": "MERVA",
+      "max_alt": "-1",
+      "min_alt": "12000"
     }
   ]
 }
