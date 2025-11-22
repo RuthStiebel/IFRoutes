@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api";
+import { API_URL, AIRPORT_ID } from "./globals";
 
 export interface ChartData {
   _id: string;
@@ -10,7 +10,7 @@ export interface ChartData {
 }
 
 export async function getMaps(
-  airportId: string = "LLBG"
+  airportId: string = AIRPORT_ID
 ): Promise<ChartData[]> {
   try {
     const res = await fetch(`${API_URL}/charts/${airportId}`);
