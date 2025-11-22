@@ -9,24 +9,23 @@ interface UserWaypoint {
 
 interface ScoreResult {
   score: number;
-  totalFixes: number;
-  correctFixes: number;
-  altitudeErrors: string[];
-  missedFixes: string[];
+  totalFixes?: number;
+  correctFixes?: number;
+  altitudeErrors?: string[];
+  correctAltitudes?: number;
+  missedFixes?: string[];
   message: string;
+  scoringMode: string;
+  fixAccuracy?: number;
+  altAccuracy?: number;
 }
 
-// 1. Bulletproof Parser
+// Bulletproof Parser
 const parseAltitude = (val: any): number => {
-  // Catch null/undefined immediately
   if (val == null || val === "") return -1;
-
   try {
-    // Force conversion to string using template literal (safest method)
     const str = `${val}`.trim();
-
     if (str === "-1") return -1;
-
     const numValue = parseInt(str.replace(/\D/g, ""));
     return isNaN(numValue) ? 0 : numValue;
   } catch (e) {
@@ -37,122 +36,172 @@ const parseAltitude = (val: any): number => {
 
 export const calculateScore = async (req: Request, res: Response) => {
   try {
-    const { mapId, waypoints } = req.body;
+    const { mapId, waypoints, practiceMode } = req.body;
 
     console.log(`Processing Score Request for: ${mapId}`);
 
-    // 2. Validate Inputs
+    // Validate Inputs
     if (!mapId) return res.status(400).json({ message: "Missing mapId" });
     if (!Array.isArray(waypoints))
       return res.status(400).json({ message: "Waypoints must be an array" });
 
-    // 3. Fetch Chart
+    // Fetch Chart
     const chart = await Chart.findById(mapId).lean();
     if (!chart) {
       console.log("Chart not found in DB");
       return res.status(404).json({ message: "Chart not found" });
     }
 
-    // 4. Sanitize User Waypoints
+    // Sanitize User Waypoints
     const safeUserWaypoints = waypoints.filter(
       (wp) => wp && typeof wp === "object"
     );
     const correctRoute = chart.fixes || [];
+    const totalItems = correctRoute.length;
 
-    // 5. Scoring State
-    let totalPointsEarned = 0;
-    const maxPointsPerFix = 4;
-    let fullyCorrectFixesCount = 0;
+    // Scoring State
+    let fixMatches = 0;
+    let altMatches = 0;
     const altitudeErrors: string[] = [];
     const missedFixes: string[] = [];
 
-    // 6. Safe Comparison Loop
-    for (let i = 0; i < correctRoute.length; i++) {
-      const correctFix = correctRoute[i];
+    // Logic Flags
+    // Note: If mode is "NO_ALT" (Altitude Drill), we do NOT score Fixes.
+    const shouldScoreFixes = practiceMode !== "NO_ALT";
+    // Note: If mode is "NO_FIX" (Fix Drill), we do NOT score Alts.
+    const shouldScoreAlts = practiceMode !== "NO_FIX";
 
-      // Safety: Skip malformed DB entries
-      if (!correctFix || typeof correctFix !== "object") continue;
+    // --- FIX SCORING LOOP ---
+    if (shouldScoreFixes) {
+      for (let i = 0; i < totalItems; i++) {
+        const correctFix = correctRoute[i];
+        const correctName = String(
+          (correctFix as any).fix_name || "Unknown"
+        ).toUpperCase();
 
-      // Safe Name Access
-      const fixNameRaw =
-        (correctFix as any).fix_name || (correctFix as any).name;
-      if (!fixNameRaw) continue;
+        let userFix: UserWaypoint | undefined;
 
-      const correctName = `${fixNameRaw}`.toUpperCase();
+        if (practiceMode === "NO_FIX") {
+          userFix = safeUserWaypoints[i]; // Strict Order
+        } else {
+          userFix = safeUserWaypoints.find(
+            (wp) => wp.name && String(wp.name).toUpperCase() === correctName
+          );
+        }
 
-      // Find match safely
-      const userFix = safeUserWaypoints.find(
-        (wp: any) => wp.name && `${wp.name}`.toUpperCase() === correctName
-      );
-
-      if (!userFix) {
-        missedFixes.push(correctName);
-        continue;
-      }
-
-      // Points for Fix Name
-      totalPointsEarned += 2;
-
-      // Safe Altitude Access
-      const dbFix = correctFix as any;
-
-      const userMin = parseAltitude(userFix.minAltitude);
-      const userMax = parseAltitude(userFix.maxAltitude);
-      const correctMin = parseAltitude(dbFix.min_alt);
-      const correctMax = parseAltitude(dbFix.max_alt);
-
-      const minMatches = userMin === correctMin;
-      const maxMatches = userMax === correctMax;
-
-      if (minMatches) totalPointsEarned += 1;
-      if (maxMatches) totalPointsEarned += 1;
-
-      if (minMatches && maxMatches) {
-        fullyCorrectFixesCount++;
-      } else {
-        const fmt = (val: number) => (val === -1 ? "None" : val);
-        let errorMsg = `${correctName}: `;
-        if (!minMatches)
-          errorMsg += `Minimum altitude expected ${fmt(correctMin)}, got ${fmt(
-            userMin
-          )}. `;
-        if (!maxMatches)
-          errorMsg += `Maximum altitude expected ${fmt(correctMax)}, got ${fmt(
-            userMax
-          )}.`;
-        altitudeErrors.push(errorMsg.trim());
+        if (userFix && String(userFix.name).toUpperCase() === correctName) {
+          fixMatches++;
+        } else {
+          missedFixes.push(correctName);
+        }
       }
     }
 
-    // 7. Calculate Final Score
-    const maxPossiblePoints = correctRoute.length * maxPointsPerFix;
-    const score =
-      maxPossiblePoints > 0
-        ? Math.round((totalPointsEarned / maxPossiblePoints) * 100)
-        : 0;
+    // --- ALTITUDE SCORING LOOP ---
+    if (shouldScoreAlts) {
+      for (let i = 0; i < totalItems; i++) {
+        const correctFix = correctRoute[i];
+        const correctName = String(
+          (correctFix as any).fix_name || "Unknown"
+        ).toUpperCase();
 
+        let userFix: UserWaypoint | undefined;
+
+        // For Altitude drills (NO_ALT), match by Order (Index)
+        if (practiceMode === "NO_ALT") {
+          userFix = safeUserWaypoints[i];
+        } else {
+          userFix = safeUserWaypoints.find(
+            (wp) => wp.name && String(wp.name).toUpperCase() === correctName
+          );
+        }
+
+        if (!userFix) {
+          altitudeErrors.push(`${correctName}: Missing entry`);
+          continue;
+        }
+
+        const dbFix = correctFix as any;
+        const userMin = parseAltitude(userFix.minAltitude);
+        const userMax = parseAltitude(userFix.maxAltitude);
+        const correctMin = parseAltitude(dbFix.min_alt);
+        const correctMax = parseAltitude(dbFix.max_alt);
+
+        const minMatch = userMin === correctMin;
+        const maxMatch = userMax === correctMax;
+
+        if (minMatch && maxMatch) {
+          altMatches++;
+        } else {
+          const fmt = (val: number) => (val === -1 ? "None" : val);
+          let errorMsg = `${correctName}: `;
+          if (!minMatch)
+            errorMsg += `Min expected ${fmt(correctMin)}, got ${fmt(
+              userMin
+            )}. `;
+          if (!maxMatch)
+            errorMsg += `Max expected ${fmt(correctMax)}, got ${fmt(userMax)}.`;
+          altitudeErrors.push(errorMsg.trim());
+        }
+      }
+    }
+
+    // --- CALCULATE PERCENTAGES ---
+    let finalScore = 0;
+    const fixPercent = totalItems > 0 ? (fixMatches / totalItems) * 100 : 0;
+    const altPercent = totalItems > 0 ? (altMatches / totalItems) * 100 : 0;
+
+    if (shouldScoreFixes && shouldScoreAlts) {
+      finalScore = (fixPercent + altPercent) / 2;
+    } else if (shouldScoreFixes) {
+      finalScore = fixPercent;
+    } else if (shouldScoreAlts) {
+      finalScore = altPercent;
+    }
+
+    finalScore = Math.round(finalScore);
+
+    // --- CONSTRUCT RESPONSE ---
+
+    // 1. Determine Label
+    let modeLabel = "Procedure";
+    if (!shouldScoreFixes) {
+      modeLabel = "Altitude Constraints";
+    } else if (!shouldScoreAlts) {
+      modeLabel = "Fix Names";
+    }
+
+    // 2. Create Result Object
     const result: ScoreResult = {
-      score,
-      totalFixes: correctRoute.length,
-      correctFixes: fullyCorrectFixesCount,
-      altitudeErrors,
-      missedFixes,
+      score: finalScore,
+      scoringMode: modeLabel,
+
+      // Fix Data (Undefined if not scoring fixes)
+      totalFixes: shouldScoreFixes ? totalItems : undefined,
+      correctFixes: shouldScoreFixes ? fixMatches : undefined, // Fixed variable name
+      missedFixes: shouldScoreFixes ? missedFixes : undefined,
+      fixAccuracy: shouldScoreFixes ? Math.round(fixPercent) : undefined,
+
+      // Altitude Data (Undefined if not scoring alts)
+      altitudeErrors: shouldScoreAlts ? altitudeErrors : undefined,
+      correctAltitudes: shouldScoreAlts ? altMatches : undefined, // Fixed variable name
+      altAccuracy: shouldScoreAlts ? Math.round(altPercent) : undefined,
+
       message:
-        score === 100
-          ? "Perfect Flight!"
-          : score > 70
+        finalScore === 100
+          ? `Perfect ${modeLabel}!`
+          : finalScore > 70
           ? "Good Job!"
-          : "Check your altitude constraints.",
+          : `Check your ${modeLabel.toLowerCase()}.`,
     };
 
-    console.log("Score calculated successfully:", score);
+    console.log("Score calculated successfully:", finalScore);
     res.json(result);
   } catch (error) {
     console.error("CRITICAL SCORING ERROR:", error);
     res.status(500).json({
       message: "Server error calculating score",
       details: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
     });
   }
 };

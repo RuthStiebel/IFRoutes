@@ -1,4 +1,4 @@
-import { API_URL, AIRPORT_ID } from "./globals";
+import { API_URL, AIRPORT_ID, PracticeMode } from "./globals";
 
 export interface ChartData {
   _id: string;
@@ -29,12 +29,16 @@ export async function getMaps(
   }
 }
 
-export async function submitRoute(mapId: string, waypoints: any[]) {
+export async function submitRoute(
+  mapId: string,
+  waypoints: any[],
+  practiceMode: PracticeMode
+): Promise<any> {
   try {
     const res = await fetch(`${API_URL}/score`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mapId, waypoints }),
+      body: JSON.stringify({ mapId, waypoints, practiceMode }),
     });
 
     if (!res.ok) {

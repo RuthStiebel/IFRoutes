@@ -90,12 +90,13 @@ export default function Home() {
   };
 
   const handleSubmitRoute = async () => {
-    if (!selectedMapId) return;
+    if (!selectedMapId || !practiceMode) return;
     try {
-      const result = await submitRoute(selectedMapId, waypoints);
+      const result = await submitRoute(selectedMapId, waypoints, practiceMode);
       setScoreResult(result);
       setRouteSubmitted(true);
       setSelectedWaypointId(null);
+      setPracticeMode(practiceMode); // Retain mode for potential new attempts
     } catch (error) {
       console.error("Error submitting route:", error);
       alert("Failed to calculate score. Please check the console.");
@@ -302,6 +303,7 @@ export default function Home() {
                   routeSubmitted={routeSubmitted}
                   waypointCount={waypoints.length}
                   scoreData={scoreResult}
+                  practiceMode={practiceMode}
                 />
               </div>
             </div>
