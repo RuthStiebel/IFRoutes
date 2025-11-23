@@ -32,10 +32,11 @@ pnpm-debug.log*
 /.next/e*
 /.next/build-*
 /.next/a*
-
+/.next/t*
+/.next/BUILD_ID
 
 /out/
-next-env.d.ts
+
 
 # Testing
 /coverage
