@@ -288,6 +288,11 @@ export default function Home() {
                       • <strong>Double-click</strong> to edit.
                     </li>
                     <li>• Enter constraints in the log.</li>
+                    <li>
+                      {" "}
+                      If there is no altitude limit, enter -1 in lieu of the
+                      altitude restriction.
+                    </li>
                   </ul>
                 </div>
 

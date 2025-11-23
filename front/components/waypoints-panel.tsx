@@ -149,6 +149,7 @@ export default function WaypointsPanel({
                               type="text"
                               value={editMaxAlt}
                               onChange={(e) => setEditMaxAlt(e.target.value)}
+                              onKeyDown={handleKeyDown}
                               className="w-full px-2 py-1 bg-background border border-input rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                               placeholder="None"
                             />
