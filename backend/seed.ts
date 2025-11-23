@@ -20,6 +20,10 @@ const chartFiles = [
   "LLBG-DAFNA1.json",
   "LLBG-MERVA2.json",
   "LLBG-VETEK1A.json",
+  "LLBG-AMMOS1A.json",
+  "LLBG-AMMOS1B.json",
+  "LLBG-GODED2.json",
+  "LLBG-NINET1.json",
 ];
 
 const seedDB = async () => {

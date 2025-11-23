@@ -173,7 +173,7 @@ export default function Home() {
               </div>
             </button>
 
-            {/* No Fixes */}
+            {/* No Fixes 
             <button
               onClick={() => setPracticeMode("NO_FIX")}
               className="flex items-center gap-4 p-6 rounded-xl border border-border bg-card hover:border-purple-500 transition-all text-left"
@@ -188,7 +188,7 @@ export default function Home() {
                 </p>
               </div>
             </button>
-
+*/}
             {/* Clean */}
             <button
               onClick={() => setPracticeMode("CLEAN")}
