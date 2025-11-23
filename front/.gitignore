@@ -16,14 +16,29 @@ pnpm-debug.log*
 /.pnp
 .pnp.js
 
+# Next.js
+/.next/cache
+/.next/dev
+/.next/server
+/.next/static
+/.next/trace*
+/.next/types
+/.next/diagnostics
+/.next/next*
+/.next/r*
+/.next/p*
+/.next/f*
+/.next/i*
+/.next/e*
+/.next/build-*
+/.next/a*
+
+
+/out/
+next-env.d.ts
+
 # Testing
 /coverage
-
-# Next.js
-/.next/
-/out/
-/build
-next-env.d.ts
 
 # Env Files
 .env*.local
