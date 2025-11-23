@@ -17,26 +17,9 @@ pnpm-debug.log*
 .pnp.js
 
 # Next.js
-/.next/cache
-/.next/dev
-/.next/server
-/.next/static
-/.next/trace*
-/.next/types
-/.next/diagnostics
-/.next/next*
-/.next/r*
-/.next/p*
-/.next/f*
-/.next/i*
-/.next/e*
-/.next/build-*
-/.next/a*
-/.next/t*
-/.next/BUILD_ID
-
+/.next*
 /out/
-
+next-env.d.ts
 
 # Testing
 /coverage
