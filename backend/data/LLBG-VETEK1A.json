@@ -1,0 +1,42 @@
+{
+  "id": "LLBG-VETEK1A",
+  "type": "STAR",
+  "name": "VETEK1A STAR",
+  "chart_date": "31 OCT 24",
+  "map_url": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/STAR/original/LLBG-VETEK1A.png?raw=true",
+  "map_url_no_alt": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/STAR/sans_altitudes/LLBG-VETEK1A_alt.png?raw=true",
+  "map_url_no_fix": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/STAR/sans_fixes/LLBG-VETEK1A_fixes.png?raw=true",
+  "map_url_clean": "https://github.com/RuthStiebel/IFRoutesCharts/blob/main/STAR/nada/LLBG-VETEK1A_nada.png?raw=true",
+  "fixes": [
+    {
+      "fix_name": "ZUKKO",
+      "max_alt": "13000",
+      "min_alt": "-1"
+    },
+    {
+      "fix_name": "KONFO",
+      "max_alt": "11000",
+      "min_alt": "10000"
+    },
+    {
+      "fix_name": "AMMOS",
+      "max_alt": "9000",
+      "min_alt": "-1"
+    },
+    {
+      "fix_name": "VETEK",
+      "max_alt": "8000",
+      "min_alt": "7000"
+    },
+    {
+      "fix_name": "BG305",
+      "max_alt": "8000",
+      "min_alt": "7000"
+    },
+    {
+      "fix_name": "BG305",
+      "max_alt": "8000",
+      "min_alt": "6000"
+    }
+  ]
+}
