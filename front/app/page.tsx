@@ -291,7 +291,8 @@ export default function Home() {
                     <li>
                       {" "}
                       If there is no altitude limit, enter -1 in lieu of the
-                      altitude restriction.
+                      altitude restriction or just leave that altitude
+                      restriction blank.
                     </li>
                   </ul>
                 </div>
