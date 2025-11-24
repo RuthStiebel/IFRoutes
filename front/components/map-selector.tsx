@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Loader2, ArrowLeft } from "lucide-react";
 import { getMaps, type ChartData } from "../lib/api";
+import { AIRPORT_ID } from "@/lib/globals";
 
 interface MapSelectorProps {
   onSelectMap: (chart: ChartData) => void;
@@ -23,7 +24,7 @@ export default function MapSelector({
     const fetchMaps = async () => {
       try {
         setLoading(true);
-        const backendData = await getMaps("LLBG");
+        const backendData = await getMaps(AIRPORT_ID);
 
         // Filter by type
         const filteredData = backendData.filter((c) => c.type === chartType);

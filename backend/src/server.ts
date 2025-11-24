@@ -15,7 +15,8 @@ const MONGO_URI =
 // --- Middleware ---
 app.use(
   cors({
-    origin: "https://ifroutes.onrender.com",
+    //origin: "https://ifroutes.onrender.com",
+    origin: "http://localhost:5000",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
