@@ -5,9 +5,25 @@ import { AlertCircle, Loader2, ArrowLeft } from "lucide-react";
 import { getMaps, type ChartData } from "../lib/api";
 import { AIRPORT_ID } from "@/lib/globals";
 
+interface PresavedFix {
+  id: string;
+  name: string;
+  altitude: string;
+  x: number;
+  y: number;
+}
+
+interface Map {
+  id: string;
+  name: string;
+  imageUrl: string;
+  presavedFixes?: PresavedFix[];
+}
+
 interface MapSelectorProps {
   onSelectMap: (chart: ChartData) => void;
   chartType: "SID" | "STAR";
+  fixes?: PresavedFix[];
   onBack: () => void;
 }
 
@@ -106,7 +122,7 @@ export default function MapSelector({
           {charts.map((chart) => (
             <button
               key={chart._id}
-              onClick={() => onSelectMap(chart)}
+              onClick={() => onSelectMap(chart, chart.presavedFixes)}
               className="text-left group flex flex-col h-full"
             >
               <div className="bg-accent rounded-lg overflow-hidden mb-3 relative border border-border flex items-center justify-center h-64">
