@@ -10,7 +10,13 @@ export interface ChartData {
   map_url_no_fix: string; // No Fix Names
   map_url_clean: string; // No Fixes or Altitudes (Line only)
   fixes?: any[];
-  //presavedFixes?: PresavedFix[];
+  savedFixes?: {
+    name: string;
+    max_alt: number;
+    min_alt: number;
+    x: number;
+    y: number;
+  }[];
 }
 
 export async function getMaps(
