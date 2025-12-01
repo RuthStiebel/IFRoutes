@@ -11,6 +11,7 @@ export interface ChartData {
   map_url_clean: string; // No Fixes or Altitudes (Line only)
   fixes?: any[];
   savedFixes?: {
+    id: string;
     name: string;
     max_alt: number;
     min_alt: number;
