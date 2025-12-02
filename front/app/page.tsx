@@ -1,29 +1,13 @@
 "use client";
 
 import { useState, useRef } from "react";
-import {
-  PlaneTakeoff,
-  PlaneLanding,
-  Eye,
-  EyeOff,
-  Hash,
-  LayoutTemplate,
-} from "lucide-react";
-import ChartCanvas from "@/components/chart-canvas";
-import WaypointsPanel from "@/components/waypoints-panel";
-import PerformanceScore from "@/components/performance-score";
-import MapSelector from "@/components/map-selector";
-import { submitRoute, type ChartData } from "../lib/api";
+import { PlaneTakeoff, PlaneLanding, EyeOff, Hash } from "lucide-react";
+import ChartCanvas from "@/components/alternative/chart-canvas";
+import WaypointsPanel from "@/components/alternative/waypoints-panel";
+import PerformanceScore from "@/components/alternative/performance-score";
+import MapSelector from "@/components/alternative/map-selector";
+import { Waypoint, submitRoute, type ChartData } from "../lib/api";
 import { PracticeMode } from "../lib/globals";
-
-interface Waypoint {
-  id: string;
-  name: string;
-  minAltitude: string;
-  maxAltitude: string;
-  x: number;
-  y: number;
-}
 
 export default function Home() {
   const [procedureType, setProcedureType] = useState<"SID" | "STAR" | null>(
@@ -34,8 +18,11 @@ export default function Home() {
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [mapImage, setMapImage] = useState<string | null>(null);
 
+  // State
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
-  const [isDrawing, setIsDrawing] = useState(true);
+  // Store the initial loaded fixes so we can reset to them
+  const [initialTemplate, setInitialTemplate] = useState<Waypoint[]>([]);
+
   const [scoreResult, setScoreResult] = useState<any>(null);
   const [routeSubmitted, setRouteSubmitted] = useState(false);
   const [selectedWaypointId, setSelectedWaypointId] = useState<string | null>(
@@ -44,31 +31,29 @@ export default function Home() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Logic to pick the correct map based on mode
-  const handleMapSelect = (chart: ChartData) => {
-    let urlToUse = chart.map_url; // Default to standard
+  // --- LOGIC: Pick map & Load Presaved Fixes ---
+  const handleMapSelect = (chart: ChartData, initialWaypoints: Waypoint[]) => {
+    let urlToUse = chart.map_url;
 
+    // 1. Determine URL based on mode
     if (practiceMode === "NO_ALT") {
-      urlToUse = chart.map_url_no_alt;
+      urlToUse = chart.map_url_no_alt || chart.map_url;
     } else if (practiceMode === "NO_FIX") {
-      urlToUse = chart.map_url_no_fix;
+      urlToUse = chart.map_url_no_fix || chart.map_url;
     } else if (practiceMode === "CLEAN") {
-      urlToUse = chart.map_url_clean;
+      urlToUse = chart.map_url_clean || chart.map_url;
     }
 
     setSelectedMapId(chart._id);
     setMapImage(urlToUse);
 
+    setWaypoints(initialWaypoints);
+    setInitialTemplate(initialWaypoints);
+
     // Reset workspace
-    setWaypoints([]);
     setRouteSubmitted(false);
     setScoreResult(null);
     setSelectedWaypointId(null);
-  };
-
-  const handleAddWaypoint = (waypoint: Waypoint) => {
-    setWaypoints([...waypoints, waypoint]);
-    setSelectedWaypointId(waypoint.id);
   };
 
   const handleUpdateWaypoint = (id: string, field: string, value: string) => {
@@ -82,8 +67,9 @@ export default function Home() {
     if (selectedWaypointId === id) setSelectedWaypointId(null);
   };
 
-  const handleClearDrawing = () => {
-    setWaypoints([]);
+  // Reverts to the initial empty dots (does not delete the dots themselves)
+  const handleResetForm = () => {
+    setWaypoints(initialTemplate);
     setRouteSubmitted(false);
     setScoreResult(null);
     setSelectedWaypointId(null);
@@ -96,7 +82,7 @@ export default function Home() {
       setScoreResult(result);
       setRouteSubmitted(true);
       setSelectedWaypointId(null);
-      setPracticeMode(practiceMode); // Retain mode for potential new attempts
+      // Retain mode for potential new attempts
     } catch (error) {
       console.error("Error submitting route:", error);
       alert("Failed to calculate score. Please check the console.");
@@ -141,22 +127,6 @@ export default function Home() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-            {/*  { Standard }
-            <button
-              onClick={() => setPracticeMode("FULL")}
-              className="flex items-center gap-4 p-6 rounded-xl border border-border bg-card hover:border-primary transition-all text-left"
-            >
-              <div className="p-3 bg-primary/10 rounded-full">
-                <Eye className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-bold">Standard Chart</h3>
-                <p className="text-xs text-muted-foreground">
-                  Full chart with fixes and altitudes shown.
-                </p>
-              </div>
-            </button>
-*/}
             {/* No Altitudes */}
             <button
               onClick={() => setPracticeMode("NO_ALT")}
@@ -173,22 +143,6 @@ export default function Home() {
               </div>
             </button>
 
-            {/* No Fixes 
-            <button
-              onClick={() => setPracticeMode("NO_FIX")}
-              className="flex items-center gap-4 p-6 rounded-xl border border-border bg-card hover:border-purple-500 transition-all text-left"
-            >
-              <div className="p-3 bg-purple-500/10 rounded-full">
-                <LayoutTemplate className="w-6 h-6 text-purple-500" />
-              </div>
-              <div>
-                <h3 className="font-bold text-purple-500">No Fix Names</h3>
-                <p className="text-xs text-muted-foreground">
-                  Altitude restrictions are visible, but fix names are hidden.
-                </p>
-              </div>
-            </button>
-*/}
             {/* Clean */}
             <button
               onClick={() => setPracticeMode("CLEAN")}
@@ -235,6 +189,7 @@ export default function Home() {
           <MapSelector
             chartType={procedureType}
             onSelectMap={handleMapSelect}
+            practiceMode={practiceMode}
             onBack={() => setPracticeMode(null)}
           />
         ) : (
@@ -247,10 +202,10 @@ export default function Home() {
                 Choose Different Map
               </button>
               <button
-                onClick={handleClearDrawing}
+                onClick={handleResetForm}
                 className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition"
               >
-                Clear Drawing
+                Reset Form
               </button>
               <button
                 onClick={handleSubmitRoute}
@@ -268,11 +223,10 @@ export default function Home() {
                     mapImage={mapImage}
                     canvasRef={canvasRef}
                     waypoints={waypoints}
-                    onAddWaypoint={handleAddWaypoint}
-                    onDeleteWaypoint={handleDeleteWaypoint}
-                    isDrawingEnabled={isDrawing}
+                    onUpdateWaypoint={handleUpdateWaypoint}
                     onSelectWaypoint={(id) => setSelectedWaypointId(id)}
                     selectedWaypointId={selectedWaypointId}
+                    practiceMode={practiceMode}
                   />
                 </div>
               </div>
@@ -282,18 +236,13 @@ export default function Home() {
                   <h3 className="font-semibold mb-3 text-sm">Instructions:</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>
-                      • <strong>Click</strong> to add points.
+                      • <strong>Click a dot</strong> (or list item) to edit.
                     </li>
                     <li>
-                      • <strong>Double-click</strong> to edit.
+                      • <strong>Fill in the missing data</strong> based on your
+                      mode.
                     </li>
-                    <li>• Enter constraints in the log.</li>
-                    <li>
-                      {" "}
-                      If there is no altitude limit, enter -1 in lieu of the
-                      altitude restriction or just leave that altitude
-                      restriction blank.
-                    </li>
+                    <li>• If no altitude limit, leave blank or enter -1.</li>
                   </ul>
                 </div>
 
@@ -301,6 +250,7 @@ export default function Home() {
                   waypoints={waypoints}
                   onUpdateWaypoint={handleUpdateWaypoint}
                   onDeleteWaypoint={handleDeleteWaypoint}
+                  onSelectWaypoint={(id) => setSelectedWaypointId(id)}
                   selectedWaypointId={selectedWaypointId}
                   practiceMode={practiceMode}
                 />

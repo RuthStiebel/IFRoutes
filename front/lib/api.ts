@@ -9,15 +9,23 @@ export interface ChartData {
   map_url_no_alt: string; // No Altitudes
   map_url_no_fix: string; // No Fix Names
   map_url_clean: string; // No Fixes or Altitudes (Line only)
-  fixes?: any[];
   savedFixes?: {
     id: string;
     name: string;
-    max_alt: number;
-    min_alt: number;
+    max_alt: string;
+    min_alt: string;
     x: number;
     y: number;
   }[];
+}
+
+export interface Waypoint {
+  id: string;
+  name: string;
+  minAltitude: string;
+  maxAltitude: string;
+  x: number;
+  y: number;
 }
 
 export async function getMaps(

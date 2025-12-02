@@ -1,119 +1,181 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { AlertCircle, Loader2 } from "lucide-react"
-
-interface PresavedFix {
-  id: string
-  name: string
-  altitude: string
-  x: number
-  y: number
-}
-
-interface Map {
-  id: string
-  name: string
-  imageUrl: string
-  presavedFixes?: PresavedFix[]
-}
+import { useState, useEffect } from "react";
+import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { Waypoint, getMaps, type ChartData } from "../../lib/api";
+import { AIRPORT_ID, type PracticeMode } from "../../lib/globals";
 
 interface MapSelectorProps {
-  onSelectMap: (mapId: string, imageUrl: string, fixes?: PresavedFix[]) => void
+  onSelectMap: (chart: ChartData, initialWaypoints: Waypoint[]) => void;
+  chartType: "SID" | "STAR";
+  practiceMode: PracticeMode | null; // Receive the mode
+  onBack: () => void;
 }
 
-export default function MapSelector({ onSelectMap }: MapSelectorProps) {
-  const [maps, setMaps] = useState<Map[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export default function MapSelector({
+  onSelectMap,
+  chartType,
+  practiceMode,
+  onBack,
+}: MapSelectorProps) {
+  const [charts, setCharts] = useState<ChartData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMaps = async () => {
       try {
-        setLoading(true)
-        // Replace with your actual backend endpoint
-        const response = await fetch("/api/maps")
+        setLoading(true);
+        const backendData = await getMaps(AIRPORT_ID);
 
-        if (!response.ok) throw new Error("Failed to fetch maps")
+        // Filter by type
+        const filteredData = backendData.filter((c) => c.type === chartType);
 
-        const data = await response.json()
-        setMaps(data)
-        setError(null)
+        setCharts(filteredData);
+        setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load maps")
-        // Mock data for demonstration
-        setMaps([
-          {
-            id: "1",
-            name: "Sample Approach Chart",
-            imageUrl: "/approach-chart.jpg",
-            presavedFixes: [
-              { id: "fix1", name: "ENTRY", altitude: "3000", x: 100, y: 100 },
-              { id: "fix2", name: "TURN", altitude: "2500", x: 300, y: 250 },
-              { id: "fix3", name: "RUNWAY", altitude: "1500", x: 500, y: 450 },
-            ],
-          },
-          {
-            id: "2",
-            name: "Standard Terminal Arrival",
-            imageUrl: "/star-chart.jpg",
-            presavedFixes: [
-              { id: "fix1", name: "INITIAL", altitude: "5000", x: 150, y: 80 },
-              { id: "fix2", name: "DESCENT", altitude: "3500", x: 350, y: 200 },
-            ],
-          },
-        ])
+        console.error("Failed to load maps:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load maps. Check console for errors."
+        );
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
+    };
+
+    fetchMaps();
+  }, [chartType]);
+
+  const handleChartClick = (chart: ChartData) => {
+    let preparedWaypoints: Waypoint[] = [];
+
+    // Logic: Load saved fixes into editable textboxes based on mode
+    if (chart.savedFixes && chart.savedFixes.length > 0) {
+      preparedWaypoints = chart.savedFixes.map((fix) => {
+        // DEFAULT: Assume Clean Mode (Everything Empty/Editable)
+        let nameVal = "";
+        let minAltVal = "";
+        let maxAltVal = "";
+
+        // MODE: NO_ALT (Practicing Altitudes)
+        // We SHOW the Fix Name (Context), and keep Altitudes empty (User Input)
+        if (practiceMode === "NO_ALT") {
+          nameVal = fix.name;
+        }
+
+        // MODE: NO_FIX (Practicing Names)
+        // We SHOW the Altitude (Context), and keep Name empty (User Input)
+        else if (practiceMode === "NO_FIX") {
+          // Assuming DB 'altitude' string maps to minAltitude for display
+          minAltVal = fix.min_alt;
+          maxAltVal = fix.max_alt;
+        }
+
+        return {
+          id: fix.id || Math.random().toString(36).substr(2, 9),
+          x: fix.x,
+          y: fix.y,
+          name: nameVal,
+          minAltitude: minAltVal,
+          maxAltitude: maxAltVal,
+        };
+      });
     }
 
-    fetchMaps()
-  }, [])
+    onSelectMap(chart, preparedWaypoints);
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
+      <div className="flex flex-col items-center justify-center py-16 gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Loading {chartType}s...</p>
       </div>
-    )
+    );
+  }
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Loading {chartType}s...</p>
+      </div>
+    );
   }
 
-  if (error && maps.length === 0) {
+  if (error) {
     return (
       <div className="bg-card border border-destructive rounded-lg p-6 mb-6">
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-destructive mb-1">Unable to load maps</h3>
+            <h3 className="font-semibold text-destructive mb-1">
+              Unable to load maps
+            </h3>
             <p className="text-sm text-muted-foreground">{error}</p>
+            <button
+              onClick={onBack}
+              className="mt-4 text-sm underline hover:text-primary"
+            >
+              Go Back
+            </button>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="bg-card border border-border rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Select a Chart</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {maps.map((map) => (
-          <button
-            key={map.id}
-            onClick={() => onSelectMap(map.id, map.imageUrl, map.presavedFixes)}
-            className="text-left group"
-          >
-            <div className="bg-accent rounded-lg overflow-hidden mb-3 aspect-video">
-              <img
-                src={map.imageUrl || "/placeholder.svg"}
-                alt={map.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition"
-              />
-            </div>
-            <h3 className="font-semibold group-hover:text-primary transition">{map.name}</h3>
-          </button>
-        ))}
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={onBack}
+          className="p-2 hover:bg-accent rounded-full transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h2 className="text-2xl font-bold">
+          Select a {chartType === "SID" ? "Departure (SID)" : "Arrival (STAR)"}
+        </h2>
       </div>
+
+      {charts.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-border rounded-lg">
+          <p className="text-muted-foreground">No {chartType} charts found.</p>
+          <button
+            onClick={onBack}
+            className="mt-2 text-blue-500 hover:underline"
+          >
+            Go back
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {charts.map((chart) => (
+            <button
+              key={chart._id}
+              onClick={() => handleChartClick(chart)}
+              className="text-left group flex flex-col h-full"
+            >
+              <div className="bg-accent rounded-lg overflow-hidden mb-3 relative border border-border flex items-center justify-center h-64">
+                <img
+                  src={chart.map_url || "/placeholder.svg"}
+                  alt={chart.name}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "https://placehold.co/400x600?text=No+Image";
+                  }}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+              </div>
+              <h3 className="font-semibold group-hover:text-blue-500 transition px-1">
+                {chart.name}
+              </h3>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
-  )
+  );
 }
