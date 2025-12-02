@@ -69,7 +69,7 @@ export default function ChartCanvas({
       ctx.stroke();
       ctx.setLineDash([]);
     }
-
+    /*
     // Draw Points
     waypoints.forEach((wp) => {
       const isSelected = wp.id === selectedWaypointId;
@@ -89,8 +89,8 @@ export default function ChartCanvas({
         ctx.stroke();
       }
     });
+    */
   }, [loadedImage, waypoints, selectedWaypointId, canvasRef, practiceMode]);
-
   // Handle Canvas Click
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (!loadedImage || !canvasRef.current) return;
@@ -209,16 +209,6 @@ export default function ChartCanvas({
                 />
               </div>
             )}
-
-            {/* Number Indicator */}
-            <div
-              className={`
-              text-[6px] font-bold text-center mt-px drop-shadow-md leading-none
-              ${isSelected ? "text-yellow-400" : "text-white/60"}
-            `}
-            >
-              #{index + 1}
-            </div>
           </div>
         );
       })}
