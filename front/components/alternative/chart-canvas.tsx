@@ -9,8 +9,8 @@ interface ChartCanvasProps {
   mapImage: string | null;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   waypoints: Waypoint[];
-  onUpdateWaypoint: (id: string, field: string, value: string) => void; // Added for map editing
-  onSelectWaypoint: (id: string | null) => void; // Changed to allow null (deselect)
+  onUpdateWaypoint: (id: string, field: string, value: string) => void;
+  onSelectWaypoint: (id: string | null) => void;
   selectedWaypointId?: string | null;
   practiceMode?: PracticeMode | null;
 }
@@ -27,9 +27,8 @@ export default function ChartCanvas({
   const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Determine visibility based on mode
-  const hideNameInput = practiceMode === "NO_ALT"; // Only doing altitudes
-  const hideAltInput = practiceMode === "NO_FIX"; // Only doing names
+  const hideNameInput = practiceMode === "NO_ALT";
+  const hideAltInput = practiceMode === "NO_FIX";
 
   // 1. Load Image
   useEffect(() => {
@@ -59,16 +58,16 @@ export default function ChartCanvas({
 
     // Draw Lines
     if (waypoints.length > 1) {
-      ctx.strokeStyle = "#3b82f6";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]); // Dashed lines for clarity
+      ctx.strokeStyle = "#1e3a8a"; // Navy Line
+      ctx.lineWidth = 1; // Thinner line
+      ctx.setLineDash([3, 3]); // Tighter dash
       ctx.beginPath();
       waypoints.forEach((wp, idx) => {
         if (idx === 0) ctx.moveTo(wp.x, wp.y);
         else ctx.lineTo(wp.x, wp.y);
       });
       ctx.stroke();
-      ctx.setLineDash([]); // Reset dash
+      ctx.setLineDash([]);
     }
 
     // Draw Points
@@ -76,22 +75,23 @@ export default function ChartCanvas({
       const isSelected = wp.id === selectedWaypointId;
 
       ctx.beginPath();
-      // If selected, turn Yellow, else Red
-      ctx.fillStyle = isSelected ? "#48a868ff" : "#8b1f1fff";
-      const radius = isSelected ? 8 : 6;
+      ctx.fillStyle = isSelected ? "#2d6949ff" : "#2d3969ff";
+
+      // 👇 SMALLER DOTS
+      const radius = isSelected ? 4 : 2.5;
 
       ctx.arc(wp.x, wp.y, radius, 0, Math.PI * 2);
       ctx.fill();
 
       if (isSelected) {
-        ctx.strokeStyle = "#e9f1d5ff";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1;
         ctx.stroke();
       }
     });
   }, [loadedImage, waypoints, selectedWaypointId, canvasRef, practiceMode]);
 
-  // Handle Canvas Click (Select Only)
+  // Handle Canvas Click
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (!loadedImage || !canvasRef.current) return;
 
@@ -99,27 +99,27 @@ export default function ChartCanvas({
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    console.log("Coordinates for JSON:", { x: clickX, y: clickY });
+    console.log("Coordinates for JSON:", {
+      x: Math.round(clickX),
+      y: Math.round(clickY),
+    });
 
-    // Check collision with existing waypoints
     let clickedId: string | null = null;
-
     for (const wp of waypoints) {
       const dist = Math.sqrt(
         Math.pow(clickX - wp.x, 2) + Math.pow(clickY - wp.y, 2)
       );
-      if (dist < 20) {
-        // Hitbox radius
+      if (dist < 12) {
+        // Tighter click radius
         clickedId = wp.id;
         break;
       }
     }
-
     onSelectWaypoint(clickedId);
   };
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    <div ref={containerRef} className="relative w-full font-sans">
       <canvas
         ref={canvasRef as React.RefObject<HTMLCanvasElement>}
         onClick={handleCanvasClick}
@@ -129,30 +129,39 @@ export default function ChartCanvas({
 
       {!mapImage && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none h-96">
-          <p className="text-muted-foreground text-lg">
-            Please select a chart to begin practicing.
-          </p>
+          <p className="text-muted-foreground text-sm">Select a chart.</p>
         </div>
       )}
 
+      {/* FLOATING EDIT INPUTS */}
       {waypoints.map((wp, index) => {
         const isSelected = wp.id === selectedWaypointId;
+
+        // Shared Input Styles (Navy Border + Extra Small)
+        const inputBaseClass = `
+          text-center text-[8px] px-0.5 py-0 shadow-sm leading-none
+          focus:outline-none focus:ring-1 focus:ring-blue-900 
+        `;
+
+        const inputSelectedClass = isSelected
+          ? "bg-white text-black border border-blue-900"
+          : "bg-white/90 text-black border border-gray-400";
 
         return (
           <div
             key={wp.id}
-            // Add click handler to select the waypoint when clicking its input box
             onClick={(e) => {
               e.stopPropagation();
               onSelectWaypoint(wp.id);
             }}
-            // Dynamic classes: Selected items pop out; others are semi-transparent
-            className={`absolute flex flex-col gap-1 p-1 rounded transition-all transform -translate-x-1/2 ${
-              isSelected ? "z-20 scale-110" : "z-10 hover:z-20 opacity-90"
+            className={`absolute flex flex-col gap-px p-px rounded transition-all transform -translate-x-1/2 ${
+              isSelected
+                ? "z-20 scale-105"
+                : "z-10 hover:z-20 opacity-80 hover:opacity-100"
             }`}
             style={{
               left: wp.x,
-              top: wp.y + 12, // Offset slightly below the dot
+              top: wp.y + 6, // Closer to dot
             }}
           >
             {/* Fix Name Input */}
@@ -165,20 +174,15 @@ export default function ChartCanvas({
                 }
                 placeholder="NAME"
                 className={`
-                  text-center uppercase font-bold text-xs px-1 py-0.5 rounded border shadow-sm w-20
-                  focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${
-                    isSelected
-                      ? "bg-white text-black border-blue-500"
-                      : "bg-white/80 text-black border-gray-400"
-                  }
+                  ${inputBaseClass} ${inputSelectedClass}
+                  uppercase font-bold w-12 h-4 rounded-sm
                 `}
               />
             )}
 
             {/* Altitude Inputs */}
             {!hideAltInput && (
-              <div className="flex gap-0.5 justify-center">
+              <div className="flex gap-px justify-center">
                 <input
                   type="text"
                   value={wp.minAltitude}
@@ -187,13 +191,8 @@ export default function ChartCanvas({
                   }
                   placeholder="MIN"
                   className={`
-                    text-center text-[10px] px-1 py-0.5 rounded-l border-y border-l shadow-sm w-10
-                    focus:outline-none focus:ring-1 focus:ring-blue-500
-                    ${
-                      isSelected
-                        ? "bg-white text-black border-blue-500"
-                        : "bg-white/80 text-black border-gray-400"
-                    }
+                    ${inputBaseClass} ${inputSelectedClass}
+                    w-7 h-4 rounded-l-sm border-r-0
                   `}
                 />
                 <input
@@ -204,13 +203,8 @@ export default function ChartCanvas({
                   }
                   placeholder="MAX"
                   className={`
-                    text-center text-[10px] px-1 py-0.5 rounded-r border shadow-sm w-10
-                    focus:outline-none focus:ring-1 focus:ring-blue-500
-                    ${
-                      isSelected
-                        ? "bg-white text-black border-blue-500"
-                        : "bg-white/80 text-black border-gray-400"
-                    }
+                    ${inputBaseClass} ${inputSelectedClass}
+                    w-7 h-4 rounded-r-sm
                   `}
                 />
               </div>
@@ -219,8 +213,8 @@ export default function ChartCanvas({
             {/* Number Indicator */}
             <div
               className={`
-              text-[8px] font-bold text-center mt-0.5 drop-shadow-md
-              ${isSelected ? "text-yellow-400" : "text-white/70"}
+              text-[6px] font-bold text-center mt-px drop-shadow-md leading-none
+              ${isSelected ? "text-yellow-400" : "text-white/60"}
             `}
             >
               #{index + 1}
