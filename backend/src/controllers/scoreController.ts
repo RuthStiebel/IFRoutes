@@ -56,6 +56,8 @@ export const calculateScore = async (req: Request, res: Response) => {
     const safeUserWaypoints = waypoints.filter(
       (wp) => wp && typeof wp === "object"
     );
+
+    // Get the correct route from DB.
     const correctRoute = chart.fixes || [];
     const totalItems = correctRoute.length;
 
@@ -66,62 +68,41 @@ export const calculateScore = async (req: Request, res: Response) => {
     const missedFixes: string[] = [];
 
     // Logic Flags
-    // Note: If mode is "NO_ALT" (Altitude Drill), we do NOT score Fixes.
+    // NO_ALT = Practice Altitudes (Score Alts only, Ignore Names)
+    // NO_FIX = Practice Names (Score Names only, Ignore Alts)
+    // CLEAN / FULL = Score Both
     const shouldScoreFixes = practiceMode !== "NO_ALT";
-    // Note: If mode is "NO_FIX" (Fix Drill), we do NOT score Alts.
     const shouldScoreAlts = practiceMode !== "NO_FIX";
 
-    // --- FIX SCORING LOOP ---
-    if (shouldScoreFixes) {
-      for (let i = 0; i < totalItems; i++) {
-        const correctFix = correctRoute[i];
-        const correctName = String(
-          (correctFix as any).fix_name || "Unknown"
-        ).toUpperCase();
+    // --- MAIN SCORING LOOP (By Index) ---
+    for (let i = 0; i < totalItems; i++) {
+      const dbFix = correctRoute[i] as any;
+      const userFix = safeUserWaypoints[i]; // Direct index matching
 
-        let userFix: UserWaypoint | undefined;
+      const correctName = String(dbFix.fix_name || "Unknown").toUpperCase();
 
-        if (practiceMode === "NO_FIX") {
-          userFix = safeUserWaypoints[i]; // Strict Order
-        } else {
-          userFix = safeUserWaypoints.find(
-            (wp) => wp.name && String(wp.name).toUpperCase() === correctName
-          );
-        }
+      // If user somehow didn't send a fix for this index (shouldn't happen if initialized correctly)
+      if (!userFix) {
+        if (shouldScoreFixes) missedFixes.push(`${correctName} (Missing)`);
+        if (shouldScoreAlts)
+          altitudeErrors.push(`${correctName}: Missing entry`);
+        continue;
+      }
 
-        if (userFix && String(userFix.name).toUpperCase() === correctName) {
+      // 1. CHECK FIX NAME
+      if (shouldScoreFixes) {
+        const userName = String(userFix.name || "")
+          .toUpperCase()
+          .trim();
+        if (userName === correctName) {
           fixMatches++;
         } else {
-          missedFixes.push(correctName);
+          missedFixes.push(`${correctName} (You put: ${userName || "Empty"})`);
         }
       }
-    }
 
-    // --- ALTITUDE SCORING LOOP ---
-    if (shouldScoreAlts) {
-      for (let i = 0; i < totalItems; i++) {
-        const correctFix = correctRoute[i];
-        const correctName = String(
-          (correctFix as any).fix_name || "Unknown"
-        ).toUpperCase();
-
-        let userFix: UserWaypoint | undefined;
-
-        // For Altitude drills (NO_ALT), match by Order (Index)
-        if (practiceMode === "NO_ALT") {
-          userFix = safeUserWaypoints[i];
-        } else {
-          userFix = safeUserWaypoints.find(
-            (wp) => wp.name && String(wp.name).toUpperCase() === correctName
-          );
-        }
-
-        if (!userFix) {
-          altitudeErrors.push(`${correctName}: Missing entry`);
-          continue;
-        }
-
-        const dbFix = correctFix as any;
+      // 2. CHECK ALTITUDE
+      if (shouldScoreAlts) {
         const userMin = parseAltitude(userFix.minAltitude);
         const userMax = parseAltitude(userFix.maxAltitude);
         const correctMin = parseAltitude(dbFix.min_alt);
@@ -135,12 +116,14 @@ export const calculateScore = async (req: Request, res: Response) => {
         } else {
           const fmt = (val: number) => (val === -1 ? "None" : val);
           let errorMsg = `${correctName}: `;
+
           if (!minMatch)
             errorMsg += `Min expected ${fmt(correctMin)}, got ${fmt(
               userMin
             )}. `;
           if (!maxMatch)
             errorMsg += `Max expected ${fmt(correctMax)}, got ${fmt(userMax)}.`;
+
           altitudeErrors.push(errorMsg.trim());
         }
       }
@@ -148,6 +131,7 @@ export const calculateScore = async (req: Request, res: Response) => {
 
     // --- CALCULATE PERCENTAGES ---
     let finalScore = 0;
+    // Prevent division by zero
     const fixPercent = totalItems > 0 ? (fixMatches / totalItems) * 100 : 0;
     const altPercent = totalItems > 0 ? (altMatches / totalItems) * 100 : 0;
 
@@ -178,13 +162,13 @@ export const calculateScore = async (req: Request, res: Response) => {
 
       // Fix Data (Undefined if not scoring fixes)
       totalFixes: shouldScoreFixes ? totalItems : undefined,
-      correctFixes: shouldScoreFixes ? fixMatches : undefined, // Fixed variable name
+      correctFixes: shouldScoreFixes ? fixMatches : undefined,
       missedFixes: shouldScoreFixes ? missedFixes : undefined,
       fixAccuracy: shouldScoreFixes ? Math.round(fixPercent) : undefined,
 
       // Altitude Data (Undefined if not scoring alts)
       altitudeErrors: shouldScoreAlts ? altitudeErrors : undefined,
-      correctAltitudes: shouldScoreAlts ? altMatches : undefined, // Fixed variable name
+      correctAltitudes: shouldScoreAlts ? altMatches : undefined,
       altAccuracy: shouldScoreAlts ? Math.round(altPercent) : undefined,
 
       message:
