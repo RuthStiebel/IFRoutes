@@ -12,6 +12,14 @@ interface Waypoint {
   y: number;
 }
 
+interface SavedFix {
+  id: string;
+  name: string;
+  altitude: string;
+  x: number;
+  y: number;
+}
+
 interface ChartCanvasProps {
   mapImage: string | null;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -21,6 +29,7 @@ interface ChartCanvasProps {
   isDrawingEnabled: boolean;
   onSelectWaypoint?: (id: string) => void;
   selectedWaypointId?: string | null;
+  savedFixes?: SavedFix[];
 }
 
 export default function ChartCanvas({
@@ -32,7 +41,8 @@ export default function ChartCanvas({
   isDrawingEnabled,
   onSelectWaypoint,
   selectedWaypointId,
-}: ChartCanvasProps) {
+}: //presavedFixes = [],
+ChartCanvasProps) {
   // Store the loaded image object so we don't reload it on every render
   const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
 
