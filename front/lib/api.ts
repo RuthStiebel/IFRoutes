@@ -9,7 +9,7 @@ export interface ChartData {
   map_url_no_alt: string; // No Altitudes
   map_url_no_fix: string; // No Fix Names
   map_url_clean: string; // No Fixes or Altitudes (Line only)
-  savedFixes?: {
+  fixes: {
     id: string;
     name: string;
     max_alt: string;

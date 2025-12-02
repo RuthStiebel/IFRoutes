@@ -52,8 +52,8 @@ export default function MapSelector({
     let preparedWaypoints: Waypoint[] = [];
 
     // Logic: Load saved fixes into editable textboxes based on mode
-    if (chart.savedFixes && chart.savedFixes.length > 0) {
-      preparedWaypoints = chart.savedFixes.map((fix) => {
+    if (chart.fixes && chart.fixes.length > 0) {
+      preparedWaypoints = chart.fixes.map((fix) => {
         // DEFAULT: Assume Clean Mode (Everything Empty/Editable)
         let nameVal = "";
         let minAltVal = "";
