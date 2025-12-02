@@ -17,8 +17,9 @@ if (!MONGO_URI) {
 // --- List of local JSON files to import ---
 const chartFiles = [
   "LLBG-SUVAS1.json",
-  /* "LLBG-DAFNA1.json",
+  "LLBG-DAFNA1.json",
   "LLBG-MERVA2.json",
+  /*
   "LLBG-VETEK1A.json",
   "LLBG-AMMOS1A.json",
   "LLBG-AMMOS1B.json",
