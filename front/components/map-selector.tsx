@@ -122,7 +122,7 @@ export default function MapSelector({
           {charts.map((chart) => (
             <button
               key={chart._id}
-              onClick={() => onSelectMap(chart, chart.presavedFixes)}
+              onClick={() => onSelectMap(chart)}
               className="text-left group flex flex-col h-full"
             >
               <div className="bg-accent rounded-lg overflow-hidden mb-3 relative border border-border flex items-center justify-center h-64">
