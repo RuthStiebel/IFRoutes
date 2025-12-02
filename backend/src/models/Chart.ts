@@ -5,6 +5,8 @@ export interface IFix extends Document {
   fix_name: string;
   min_alt: string;
   max_alt: string;
+  x: number; // X coordinate on the chart image
+  y: number; // Y coordinate on the chart image
 }
 
 // Updated Interface with new map variants
@@ -24,6 +26,8 @@ const FixSchema: Schema = new Schema(
     fix_name: { type: String, required: true },
     min_alt: { type: String, required: true },
     max_alt: { type: String, required: true },
+    x: { type: Number, required: true },
+    y: { type: Number, required: true },
   },
   { _id: false }
 );
