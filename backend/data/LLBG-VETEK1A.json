@@ -11,32 +11,44 @@
     {
       "fix_name": "ZUKKO",
       "max_alt": "13000",
-      "min_alt": "-1"
+      "min_alt": "-1",
+      "x": 37,
+      "y": 39
     },
     {
       "fix_name": "KONFO",
       "max_alt": "11000",
-      "min_alt": "10000"
+      "min_alt": "10000",
+      "x": 146,
+      "y": 136
     },
     {
       "fix_name": "AMMOS",
       "max_alt": "9000",
-      "min_alt": "-1"
+      "min_alt": "-1",
+      "x": 251,
+      "y": 158
     },
     {
       "fix_name": "VETEK",
       "max_alt": "8000",
-      "min_alt": "7000"
+      "min_alt": "7000",
+      "x": 357,
+      "y": 175
     },
     {
       "fix_name": "BG305",
       "max_alt": "8000",
-      "min_alt": "7000"
+      "min_alt": "7000",
+      "x": 446,
+      "y": 258
     },
     {
       "fix_name": "BG305",
       "max_alt": "8000",
-      "min_alt": "6000"
+      "min_alt": "6000",
+      "x": 490,
+      "y": 297
     }
   ]
 }

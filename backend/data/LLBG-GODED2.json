@@ -11,27 +11,37 @@
     {
       "fix_name": "ZUKKO",
       "max_alt": "13000",
-      "min_alt": "-1"
+      "min_alt": "-1",
+      "x": 79,
+      "y": 65
     },
     {
       "fix_name": "KONFO",
       "max_alt": "11000",
-      "min_alt": "10000"
+      "min_alt": "10000",
+      "x": 251,
+      "y": 227
     },
     {
       "fix_name": "NINET",
       "max_alt": "9000",
-      "min_alt": "5000"
+      "min_alt": "5000",
+      "x": 409,
+      "y": 331
     },
     {
       "fix_name": "DIRAN",
       "max_alt": "7000",
-      "min_alt": "5000"
+      "min_alt": "5000",
+      "x": 566,
+      "y": 433
     },
     {
       "fix_name": "GODED",
       "max_alt": "-1",
-      "min_alt": "5000"
+      "min_alt": "5000",
+      "x": 668,
+      "y": 504
     }
   ]
 }
